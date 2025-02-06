@@ -17,9 +17,12 @@
               <li class="nav-item">
                 <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link {% if request.path == '/about/' %}active{% endif %}" href="{% url 'about' %}">About</a>
-              </li>
+                  <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/about/' %}active{% endif %}" href="{% url 'about' %}">About</a>
+                  </li>
+                <li class="nav-item">
+                <a class="nav-link" href="{% url 'movie_detail' movie_id=1 %}">Movie Detail</a>
+                </li>
             </ul>
         </div>
       </div>
@@ -43,7 +46,11 @@
                 <div class="card h-100">
                     <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.title }}">
                     <div class="card-body">
-                        <h5 class="card-title">{{ movie.title }}</h5>
+                        <h5 class="card-title">
+                            <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none text-dark"> <!-- Enlace al detalle de la película -->
+                                {{ movie.title }}
+                            </a>
+                        </h5>
                         <p class="card-text">{{ movie.description }}</p>
                         {% if movie.url %}
                         <a href="{{ movie.url }}" class="btn btn-primary">Movie Link</a>
