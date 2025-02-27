@@ -34,6 +34,9 @@ Over the course of this workshop, I successfully implemented the foundational co
     *  Created dedicated movie detail pages to present comprehensive information for each movie, improving content depth and user experience.
 
 * **Version Control and Collaboration Workflow with Git and GitHub:**
+     *  Initialized a Git repository for the project, establishing version control for code tracking and collaborative development.
+    *  Created a remote repository on GitHub and pushed the local project, preparing for collaborative development and code sharing.
+    *  Practiced branching and merging workflows using Git, creating a `development` branch for feature development and subsequently merging it back into the `main` branch, demonstrating a fundamental collaborative development pattern.
 
 # News and Movie Review Web Application - Workshop #2 Completion Report
 
