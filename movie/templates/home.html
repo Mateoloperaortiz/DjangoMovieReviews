@@ -1,60 +1,186 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- FORM PARA SUSCRIBIRSE -->
-<div class="card mb-4">
-  <div class="card-header">
-    <h4>Subscribe to our newsletter</h4>
-  </div>
-  <div class="card-body">
-    <form method="GET" action="{% url 'signup' %}" class="row g-3">
-      <div class="col-md-6">
-        <label for="email" class="form-label">Email:</label>
-        <input type="email" class="form-control" id="email" name="email" required>
+<!-- Hero Section -->
+<div class="py-5 mb-5 bg-light rounded-3">
+  <div class="container px-4">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-5 fw-bold">Discover Great Movies</h1>
+        <p class="lead mb-4">Find your next favorite film with our curated reviews and recommendations from movie enthusiasts.</p>
+        <form method="GET" class="d-flex mb-3">
+          <input class="form-control form-control-lg me-2" 
+              type="search" 
+              placeholder="Search for movies..." 
+              aria-label="Search" 
+              name="searchMovie"
+              value="{{ searchTerm|default_if_none:'' }}">
+          <button class="btn btn-primary btn-lg" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+        {% if searchTerm %}
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i> Showing results for: <strong>{{ searchTerm }}</strong>
+          </div>
+        {% endif %}
       </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Sign Up</button>
+      <div class="col-lg-6 d-none d-lg-block">
+        <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+             class="img-fluid rounded shadow" alt="Movie Collection">
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- Formulario de búsqueda de película -->
-<form method="GET" class="d-flex mb-3">
-    <input class="form-control me-2" 
-        type="search" 
-        placeholder="Search movie" 
-        aria-label="Search" 
-        name="searchMovie"
-        value="{{ searchTerm|default_if_none:'' }}">
-    <button class="btn btn-outline-success" type="submit">Search</button>
-</form>
-
-{% if searchTerm %}
-<p>Searching for: {{ searchTerm }}</p>
-{% endif %}
-
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for movie in movies %}
-    <div class="col">
-        <div class="card h-100">
-            <!-- Imagen de la película -->
-            <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.title }}">
-            
-            <div class="card-body">
-                <h5 class="card-title">
-                    <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none text-dark">
-                        {{ movie.title }}
-                    </a>
-                </h5>
-                <p class="card-text">Genre: {{ movie.genre|default:'-' }} | Year: {{ movie.year|default:'-' }}</p>
-                <p class="card-text">{{ movie.description }}</p>
-                {% if movie.url %}
-                <a href="{{ movie.url }}" class="btn btn-primary">Movie Link</a>
-                {% endif %}
-            </div>
-        </div>
     </div>
-    {% endfor %}
+  </div>
 </div>
+
+<!-- Featured Movies Section with Genre Pills -->
+<div class="container mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="border-start border-primary border-4 ps-3">Featured Movies</h2>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-sort-down me-1"></i> Sort by
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
+        <li><a class="dropdown-item" href="#">Newest First</a></li>
+        <li><a class="dropdown-item" href="#">Rating: High to Low</a></li>
+        <li><a class="dropdown-item" href="#">Title (A-Z)</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Genre Filter -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-filter me-2"></i> Filter by Genre</h5>
+      <a href="{% url 'home' %}{% if searchTerm %}?searchMovie={{ searchTerm }}{% endif %}" 
+         class="btn btn-sm {% if not current_genre %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        <i class="bi bi-x-circle me-1"></i> Clear Filter
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="d-flex flex-wrap gap-2">
+        {% for genre in available_genres %}
+        <a href="{% url 'home' %}?genre={{ genre }}{% if searchTerm %}&searchMovie={{ searchTerm }}{% endif %}" 
+           class="btn btn-sm {% if current_genre == genre %}btn-primary{% else %}btn-outline-secondary{% endif %} mb-1">
+          {{ genre }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Filter Indicator -->
+  {% if current_genre %}
+  <div class="alert alert-light d-flex align-items-center mb-4" role="alert">
+    <i class="bi bi-funnel-fill me-2 text-primary"></i>
+    <div>
+      Currently showing: <strong>{{ current_genre }}</strong> movies
+      <a href="{% url 'home' %}{% if searchTerm %}?searchMovie={{ searchTerm }}{% endif %}" class="ms-2 text-decoration-none">
+        <i class="bi bi-x-circle"></i>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Movie Grid -->
+  <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+    {% if movies %}
+      {% for movie in movies %}
+      <div class="col">
+        <div class="card h-100 shadow-sm hover-effect">
+          <div class="position-relative">
+            <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 200px; object-fit: cover;">
+            <span class="position-absolute top-0 end-0 badge bg-dark m-2">{{ movie.year|default:'-' }}</span>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title">
+              <a href="{% url 'movie_detail' movie.id %}" class="text-decoration-none stretched-link">
+                {{ movie.title }}
+              </a>
+            </h5>
+            <div class="d-flex align-items-center mb-2">
+              <span class="badge bg-primary me-2">{{ movie.genre|default:'Genre N/A' }}</span>
+              <div class="text-warning">
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-fill"></i>
+                <i class="bi bi-star-half"></i>
+                <i class="bi bi-star"></i>
+              </div>
+            </div>
+            <p class="card-text small">{{ movie.description|truncatechars:80 }}</p>
+          </div>
+          <div class="card-footer bg-white border-top-0 pt-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="{% url 'movie_detail' movie.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-info-circle me-1"></i> Details
+              </a>
+              {% if movie.url %}
+              <a href="{{ movie.url }}" class="btn btn-sm btn-primary">
+                <i class="bi bi-play-fill me-1"></i> Watch
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i> No movies found matching your criteria. Try a different filter or search term.
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  
+  <!-- Pagination -->
+  {% if movies|length > 16 %}
+  <nav aria-label="Movie pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item disabled">
+        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+      </li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item">
+        <a class="page-link" href="#">Next</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<!-- Newsletter Subscription Section -->
+<div class="container py-5 my-5 bg-light rounded-3">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 text-center">
+      <h2 class="mb-3">Stay Updated with Movie News</h2>
+      <p class="lead mb-4">Subscribe to our newsletter to receive the latest movie reviews, news, and special recommendations.</p>
+      <form method="GET" action="{% url 'signup' %}" class="row g-3 justify-content-center">
+        <div class="col-md-8">
+          <div class="input-group">
+            <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Your email address" required>
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-envelope me-2"></i> Subscribe
+            </button>
+          </div>
+          <div class="form-text text-center">We'll never share your email with anyone else.</div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Custom styles for hover effects -->
+<style>
+  .hover-effect {
+    transition: transform 0.3s ease;
+  }
+  .hover-effect:hover {
+    transform: translateY(-5px);
+  }
+</style>
 {% endblock content %}

@@ -8,14 +8,44 @@ import urllib, base64
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
+from django.db.models import Count
 
 def home(request):
     searchTerm = request.GET.get('searchMovie')
+    genre_filter = request.GET.get('genre')
+    
+    # Base queryset
+    movies = Movie.objects.all()
+    
+    # Apply search filter if provided
     if searchTerm:
-        movies = Movie.objects.filter(title__icontains=searchTerm)
-    else:
-        movies = Movie.objects.all()
-    return render(request, 'home.html', {'searchTerm':searchTerm, 'movies': movies})
+        movies = movies.filter(title__icontains=searchTerm)
+    
+    # Extract individual genres from the combined genre strings
+    all_genre_strings = Movie.objects.exclude(genre__isnull=True).exclude(genre='').values_list('genre', flat=True)
+    unique_genres = set()
+    
+    for genre_string in all_genre_strings:
+        if genre_string:
+            # Split by comma and remove leading/trailing whitespace
+            individual_genres = [g.strip() for g in genre_string.split(',')]
+            for genre in individual_genres:
+                if genre:
+                    unique_genres.add(genre)
+    
+    # Sort genres alphabetically
+    available_genres = sorted(list(unique_genres))
+    
+    # Apply genre filter if provided
+    if genre_filter and genre_filter.lower() != 'all':
+        movies = movies.filter(genre__icontains=genre_filter)
+    
+    return render(request, 'home.html', {
+        'searchTerm': searchTerm,
+        'movies': movies,
+        'current_genre': genre_filter,
+        'available_genres': available_genres
+    })
 
 def about(request):
     return render(request, 'about.html')
