@@ -1,5 +1,41 @@
 {% extends 'base.html' %}
 
+<!-- Custom CSS for responsive star ratings -->
+<style>
+  .stars-container {
+    font-size: 1rem;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  
+  .movie-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .stars-container {
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .stars-container {
+      font-size: 0.75rem;
+      letter-spacing: 0px;
+    }
+    
+    .stars-container small {
+      display: none; /* Hide the numeric rating on very small screens */
+    }
+  }
+</style>
+
 {% block content %}
 <!-- Hero Section -->
 <div class="py-5 mb-5 bg-light rounded-3">
@@ -99,14 +135,66 @@
                 {{ movie.title }}
               </a>
             </h5>
-            <div class="d-flex align-items-center mb-2">
-              <span class="badge bg-primary me-2">{{ movie.genre|default:'Genre N/A' }}</span>
-              <div class="text-warning">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-half"></i>
-                <i class="bi bi-star"></i>
+            <div class="movie-info">
+              <span class="badge bg-primary">{{ movie.genre|default:'Genre N/A' }}</span>
+              <div class="text-warning stars-container">
+                {% with id_mod=movie.id|add:0|divisibleby:5 %}
+                  {% if id_mod %}
+                    {% with rating=5.0 %}
+                      {% for i in '12345' %}
+                        <i class="bi bi-star-fill"></i>
+                      {% endfor %}
+                      <small class="ms-1 text-muted">{{ rating|floatformat:1 }}</small>
+                    {% endwith %}
+                  {% else %}
+                    {% with id_mod=movie.id|add:0|divisibleby:4 %}
+                      {% if id_mod %}
+                        {% with rating=4.5 %}
+                          {% for i in '1234' %}
+                            <i class="bi bi-star-fill"></i>
+                          {% endfor %}
+                          <i class="bi bi-star-half"></i>
+                          <small class="ms-1 text-muted">{{ rating|floatformat:1 }}</small>
+                        {% endwith %}
+                      {% else %}
+                        {% with id_mod=movie.id|add:0|divisibleby:3 %}
+                          {% if id_mod %}
+                            {% with rating=4.0 %}
+                              {% for i in '1234' %}
+                                <i class="bi bi-star-fill"></i>
+                              {% endfor %}
+                              <i class="bi bi-star"></i>
+                              <small class="ms-1 text-muted">{{ rating|floatformat:1 }}</small>
+                            {% endwith %}
+                          {% else %}
+                            {% with id_mod=movie.id|add:0|divisibleby:2 %}
+                              {% if id_mod %}
+                                {% with rating=3.5 %}
+                                  {% for i in '123' %}
+                                    <i class="bi bi-star-fill"></i>
+                                  {% endfor %}
+                                  <i class="bi bi-star-half"></i>
+                                  <i class="bi bi-star"></i>
+                                  <small class="ms-1 text-muted">{{ rating|floatformat:1 }}</small>
+                                {% endwith %}
+                              {% else %}
+                                {% with rating=3.0 %}
+                                  {% for i in '123' %}
+                                    <i class="bi bi-star-fill"></i>
+                                  {% endfor %}
+                                  {% for i in '45' %}
+                                    <i class="bi bi-star"></i>
+                                  {% endfor %}
+                                  <small class="ms-1 text-muted">{{ rating|floatformat:1 }}</small>
+                                {% endwith %}
+                              {% endif %}
+                            {% endwith %}
+                          {% endif %}
+                        {% endwith %}
+                      {% endif %}
+                    {% endwith %}
+                  {% endif %}
+                {% endwith %}
               </div>
             </div>
             <p class="card-text small">{{ movie.description|truncatechars:80 }}</p>
