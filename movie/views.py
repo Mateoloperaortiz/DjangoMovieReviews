@@ -9,13 +9,15 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.db.models import Count
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def home(request):
     searchTerm = request.GET.get('searchMovie')
     genre_filter = request.GET.get('genre')
+    sort_by = request.GET.get('sort', 'default')  # Default sorting
     
-    # Base queryset
-    movies = Movie.objects.all()
+    # Base queryset with default ordering to avoid pagination warning
+    movies = Movie.objects.all().order_by('id')
     
     # Apply search filter if provided
     if searchTerm:
@@ -40,11 +42,35 @@ def home(request):
     if genre_filter and genre_filter.lower() != 'all':
         movies = movies.filter(genre__icontains=genre_filter)
     
+    # Apply sorting
+    if sort_by == 'title_asc':
+        movies = movies.order_by('title')
+    elif sort_by == 'year_desc':
+        movies = movies.order_by('-year')
+    elif sort_by == 'year_asc':
+        movies = movies.order_by('year')
+    # Default ordering is by id which was set at the beginning
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    movies_per_page = 12  # Adjust this number as needed
+    paginator = Paginator(movies, movies_per_page)
+    
+    try:
+        paginated_movies = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        paginated_movies = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results
+        paginated_movies = paginator.page(paginator.num_pages)
+    
     return render(request, 'home.html', {
         'searchTerm': searchTerm,
-        'movies': movies,
+        'movies': paginated_movies,
         'current_genre': genre_filter,
-        'available_genres': available_genres
+        'available_genres': available_genres,
+        'current_sort': sort_by
     })
 
 def about(request):

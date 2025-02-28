@@ -51,6 +51,12 @@
               aria-label="Search" 
               name="searchMovie"
               value="{{ searchTerm|default_if_none:'' }}">
+          {% if current_genre %}
+          <input type="hidden" name="genre" value="{{ current_genre }}">
+          {% endif %}
+          {% if current_sort %}
+          <input type="hidden" name="sort" value="{{ current_sort }}">
+          {% endif %}
           <button class="btn btn-primary btn-lg" type="submit">
             <i class="bi bi-search"></i>
           </button>
@@ -78,9 +84,30 @@
         <i class="bi bi-sort-down me-1"></i> Sort by
       </button>
       <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-        <li><a class="dropdown-item" href="#">Newest First</a></li>
-        <li><a class="dropdown-item" href="#">Rating: High to Low</a></li>
-        <li><a class="dropdown-item" href="#">Title (A-Z)</a></li>
+        <li>
+          <a class="dropdown-item {% if current_sort == 'default' %}active{% endif %}" 
+             href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}sort=default">
+            Default
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item {% if current_sort == 'year_desc' %}active{% endif %}" 
+             href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}sort=year_desc">
+            Newest First
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item {% if current_sort == 'year_asc' %}active{% endif %}" 
+             href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}sort=year_asc">
+            Oldest First
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item {% if current_sort == 'title_asc' %}active{% endif %}" 
+             href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}sort=title_asc">
+            Title (A-Z)
+          </a>
+        </li>
       </ul>
     </div>
   </div>
@@ -89,7 +116,7 @@
   <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
       <h5 class="mb-0"><i class="bi bi-filter me-2"></i> Filter by Genre</h5>
-      <a href="{% url 'home' %}{% if searchTerm %}?searchMovie={{ searchTerm }}{% endif %}" 
+      <a href="{% url 'home' %}{% if searchTerm %}?searchMovie={{ searchTerm }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
          class="btn btn-sm {% if not current_genre %}btn-primary{% else %}btn-outline-primary{% endif %}">
         <i class="bi bi-x-circle me-1"></i> Clear Filter
       </a>
@@ -97,9 +124,9 @@
     <div class="card-body">
       <div class="d-flex flex-wrap gap-2">
         {% for genre in available_genres %}
-        <a href="{% url 'home' %}?genre={{ genre }}{% if searchTerm %}&searchMovie={{ searchTerm }}{% endif %}" 
+        <a href="{% url 'home' %}?genre={{ genre }}{% if searchTerm %}&searchMovie={{ searchTerm }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" 
            class="btn btn-sm {% if current_genre == genre %}btn-primary{% else %}btn-outline-secondary{% endif %} mb-1">
-          {{ genre }}
+           {{ genre }}
         </a>
         {% endfor %}
       </div>
@@ -112,7 +139,7 @@
     <i class="bi bi-funnel-fill me-2 text-primary"></i>
     <div>
       Currently showing: <strong>{{ current_genre }}</strong> movies
-      <a href="{% url 'home' %}{% if searchTerm %}?searchMovie={{ searchTerm }}{% endif %}" class="ms-2 text-decoration-none">
+      <a href="{% url 'home' %}{% if searchTerm %}?searchMovie={{ searchTerm }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="ms-2 text-decoration-none">
         <i class="bi bi-x-circle"></i>
       </a>
     </div>
@@ -224,20 +251,52 @@
   </div>
   
   <!-- Pagination -->
-  {% if movies|length > 16 %}
+  {% if movies.paginator.num_pages > 1 %}
   <nav aria-label="Movie pagination" class="mt-4">
     <ul class="pagination justify-content-center">
-      <li class="page-item disabled">
-        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-      </li>
-      <li class="page-item active"><a class="page-link" href="#">1</a></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item">
-        <a class="page-link" href="#">Next</a>
-      </li>
+      {% if movies.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}page={{ movies.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span> Previous
+          </a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+            <span aria-hidden="true">&laquo;</span> Previous
+          </a>
+        </li>
+      {% endif %}
+      
+      {% for i in movies.paginator.page_range %}
+        {% if movies.number == i %}
+          <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+        {% elif i > movies.number|add:'-3' and i < movies.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}page={{ i }}">{{ i }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+      
+      {% if movies.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if searchTerm %}searchMovie={{ searchTerm }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}page={{ movies.next_page_number }}" aria-label="Next">
+            Next <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+            Next <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      {% endif %}
     </ul>
   </nav>
+  
+  <div class="text-center text-muted mt-2">
+    Showing {{ movies.start_index }} to {{ movies.end_index }} of {{ movies.paginator.count }} movies
+  </div>
   {% endif %}
 </div>
 
