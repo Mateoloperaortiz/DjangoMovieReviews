@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h2 class="card-title mb-0">
+            <i class="bi bi-magic me-2"></i> Movie Recommendations
+          </h2>
+        </div>
+        <div class="card-body">
+          <p class="lead">Enter a description or theme and we'll recommend the most suitable movie using artificial intelligence.</p>
+          
+          <form method="POST" action="" class="mb-4">
+            {% csrf_token %}
+            <div class="input-group">
+              <input type="text" id="prompt" name="prompt" class="form-control" placeholder="Example: World War II movie" required>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i> Find Movie
+              </button>
+            </div>
+          </form>
+          
+          {% if error_message %}
+          <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error_message }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      {% if recommended_movie %}
+      <div class="card shadow mb-4">
+        <div class="card-header bg-success text-white">
+          <h3 class="card-title mb-0">
+            <i class="bi bi-trophy-fill me-2"></i> Recommended Movie
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3 mb-md-0">
+              {% if recommended_movie.image %}
+              <img src="{{ recommended_movie.image.url }}" alt="{{ recommended_movie.title }}" class="img-fluid rounded">
+              {% else %}
+              <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 300px">
+                <i class="bi bi-film" style="font-size: 5rem; color: #ccc;"></i>
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-md-8">
+              <h4 class="mb-2">{{ recommended_movie.title }}</h4>
+              {% if recommended_movie.year %}
+              <p class="badge bg-secondary mb-2">{{ recommended_movie.year }}</p>
+              {% endif %}
+              {% if recommended_movie.genre %}
+              <p class="badge bg-info text-dark mb-2">{{ recommended_movie.genre }}</p>
+              {% endif %}
+              <p class="mb-2"><strong>Similarity score:</strong> {{ similarity_score|floatformat:4 }}</p>
+              <p class="mb-4">{{ recommended_movie.description }}</p>
+              <div class="d-flex">
+                <a href="{% url 'movie_detail' recommended_movie.id %}" class="btn btn-primary me-2">
+                  <i class="bi bi-info-circle me-1"></i> View Details
+                </a>
+                {% if recommended_movie.url %}
+                <a href="{{ recommended_movie.url }}" class="btn btn-success">
+                  <i class="bi bi-play-fill me-1"></i> Watch Movie
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %} 

@@ -10,6 +10,7 @@ urlpatterns = [
     path('about/', movieViews.about, name='about'),
     path('movie/<int:movie_id>/', movieViews.movie_detail, name='movie_detail'),
     path('news/', include('news.urls')),
+    path('recommendations/', include('recommendations.urls')),
     path('statistics/', movieViews.statistics_view, name='statistics'),
     path('signup/', movieViews.signup_view, name='signup'),
     path('login/', movieViews.login_view, name='login'),

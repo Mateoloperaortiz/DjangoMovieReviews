@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'movie',
     'news',
+    'recommendations',
+    'django_q',
+    'scheduler',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +53,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Django Q Configuration
+Q_CLUSTER = {
+    'name': 'DjangoMovieReviews',
+    'workers': 2,
+    'recycle': 500,
+    'timeout': 300,
+    'retry': 310,     # slightly longer than timeout
+    'compress': True,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'cpu_affinity': 1,
+    'label': 'Django Q',
+    'orm': 'default',
+    'max_attempts': 3,
+}
 
 ROOT_URLCONF = 'moviereviews.urls'
 

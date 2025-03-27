@@ -62,6 +62,11 @@
           </a>
         </li>
         <li class="nav-item">
+          <a class="nav-link {% if 'recommendations' in request.path %}active{% endif %}" href="{% url 'recommendations:recommend' %}">
+            <i class="bi bi-magic me-1"></i> Recommendations
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link {% if 'about' in request.path %}active{% endif %}" href="{% url 'about' %}">
             <i class="bi bi-info-circle me-1"></i> About
           </a>
