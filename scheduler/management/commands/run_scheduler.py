@@ -1,6 +1,6 @@
 import time
 from django.core.management.base import BaseCommand
-from django_q.cluster import Cluster
+from django_q2.cluster import Cluster
 import logging
 
 logger = logging.getLogger(__name__)

@@ -14,8 +14,8 @@ class SchedulerConfig(AppConfig):
                 return
                 
         # Schedule periodic tasks
-        from django_q.tasks import schedule
-        from django_q.models import Schedule
+        from django_q2.tasks import schedule
+        from django_q2.models import Schedule
         
         # Delete any existing schedules with the same name
         Schedule.objects.filter(name='update_movie_embeddings').delete()
