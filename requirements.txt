@@ -7,4 +7,5 @@ google-generativeai
 huggingface_hub
 python-dotenv
 numpy
-requests 
+requests
+gunicorn 
