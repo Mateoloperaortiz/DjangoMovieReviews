@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['34.207.70.178', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
-    'django_q2',
+    'django-q2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
