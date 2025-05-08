@@ -6,3 +6,5 @@
     .vscode/
     *.sqlite3
     media/
+
+    MovieReviews.pem

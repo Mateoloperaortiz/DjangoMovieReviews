@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-04uw%2=@6trgveh0n4*=!#lrjyuk9@2r%g%x!q7u^=!_#%ez4u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['34.207.70.178', 'localhost', '127.0.0.1']
 
@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['34.207.70.178', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
-    'django-q2',
+    'django_q2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
