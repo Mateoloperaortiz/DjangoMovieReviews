@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'movie',
     'news',
     'recommendations',
-    'django_q',
     'scheduler',
 ]
 
