@@ -55,11 +55,11 @@ class Command(BaseCommand):
             
             self.stdout.write(self.style.SUCCESS(f"Saved and updated image for: {movie.title}"))
             
-            # ⚠️ Process only one movie to save API resources
-            # 🚫 Don't remove this break as instructed
-            break
+            # The break statement below was removed to allow processing multiple images.
+            # Consider API rate limits and costs if processing a large number of images.
+            # break 
             
-        self.stdout.write(self.style.SUCCESS(f"Image generation and database update process completed."))
+        self.stdout.write(self.style.SUCCESS(f"Image generation and database update process completed for all iterated movies."))
 
     def generate_and_download_image(self, client, movie_title, save_folder):
         """
@@ -70,7 +70,7 @@ class Command(BaseCommand):
             model="dall-e-2",
             prompt=prompt,
             size="256x256",
-            quality="standard",
+            # quality="standard", # Removed: 'quality' parameter is not supported by dall-e-2
             n=1,
         )
         image_url = response.data[0].url
