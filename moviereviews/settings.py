@@ -30,7 +30,8 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 # Fetch ALLOWED_HOSTS from environment variable, defaulting to localhost and a common DO app pattern
 # For production, this should be a comma-separated string like "myapp.ondigitalocean.app,www.myapp.ondigitalocean.app"
-ALLOWED_HOSTS_STRING = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS_STRING = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1', 'movie-reviews-u697v.ondigitalocean.app')
+
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STRING.split(',')]
 # Add the DigitalOcean App Platform default domain pattern if a specific app URL is provided via another env var
 # (This is a more advanced setup, for now, the user can set DJANGO_ALLOWED_HOSTS directly)
