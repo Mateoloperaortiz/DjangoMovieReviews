@@ -17,40 +17,38 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # Look for the .env file in various possible locations
+        # Attempt to load OpenAI API key from .env files
+        env_loaded_from_file = False
         env_paths = [
             'openAI.env',                      # Project root
             os.path.join(os.getcwd(), 'openAI.env'), # Absolute path to root
             '../openAI.env',                   # One level up
             '../../openAI.env',                # Two levels up
         ]
-        
-        env_loaded = False
-        env_path_used = None
-        
         for env_path in env_paths:
             if os.path.exists(env_path):
                 self.stdout.write(f"Loading environment variables from: {env_path}")
                 load_dotenv(env_path)
-                env_loaded = True
-                env_path_used = env_path
+                env_loaded_from_file = True
                 break
-                
-        if not env_loaded:
-            self.stdout.write(self.style.ERROR("Could not find openAI.env file. Searched in: " + ", ".join(env_paths)))
+        
+        # Now, check if the API key is actually available in the environment
+        api_key_value = os.environ.get('openai_apikey')
+        
+        if not api_key_value:
+            error_msg = "OpenAI API key ('openai_apikey') not found. "
+            if env_loaded_from_file:
+                error_msg += "It was not found in the loaded .env file or as a platform environment variable."
+            else:
+                error_msg += "No .env file was found, and it was not set as a platform environment variable."
+            self.stdout.write(self.style.ERROR(error_msg))
             return
             
-        # Verify that the API key is available
-        api_key = os.environ.get('openai_apikey')
-        if not api_key:
-            self.stdout.write(self.style.ERROR(f"API key 'openai_apikey' not found in {env_path_used}"))
-            return
-            
-        self.stdout.write(f"API key found: {api_key[:5]}...{api_key[-5:]}")
+        self.stdout.write(f"Using API key: {api_key_value[:5]}...{api_key_value[-5:]}")
             
         try:
             # Initialize the OpenAI client with the API Key
-            client = OpenAI(api_key=api_key)
+            client = OpenAI(api_key=api_key_value)
 
             # Define the general instruction for description generation
             instruction = """
@@ -120,4 +118,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Successfully updated {count} movie descriptions.'))
             
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"General error: {str(e)}")) 
+            self.stdout.write(self.style.ERROR(f"General error: {str(e)}"))

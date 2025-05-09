@@ -21,20 +21,31 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # Load OpenAI API key
-        env_loaded = False
+        # Attempt to load OpenAI API key from .env files
+        # This is primarily for local development. On DO, these files won't exist.
+        env_loaded_from_file = False
         for path in ['openAI.env', '../openAI.env', './openAI.env']:
             if os.path.exists(path):
                 load_dotenv(path)
-                env_loaded = True
-                logger.info(f"Loaded environment from: {path}")
+                env_loaded_from_file = True # Indicates an attempt was made and a file was found
+                logger.info(f"Loaded environment variables from: {path}")
                 break
         
-        if not env_loaded or not os.environ.get('openai_apikey'):
-            self.stderr.write(self.style.ERROR('OpenAI API key not found'))
+        # Now, check if the API key is actually available in the environment,
+        # either from the .env file (if loaded) or from platform environment variables.
+        api_key_value = os.environ.get('openai_apikey')
+        
+        if not api_key_value:
+            # Construct a more informative error message
+            error_msg = "OpenAI API key ('openai_apikey') not found. "
+            if env_loaded_from_file:
+                error_msg += "It was not found in the loaded .env file or as a platform environment variable."
+            else:
+                error_msg += "No .env file was found, and it was not set as a platform environment variable."
+            self.stderr.write(self.style.ERROR(error_msg))
             return
             
-        client = OpenAI(api_key=os.environ.get('openai_apikey'))
+        client = OpenAI(api_key=api_key_value)
         
         # Get movies that need embedding computation
         if options['force']:
@@ -71,4 +82,4 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(self.style.ERROR(f"Error computing embedding for {movie.title}: {str(e)}"))
                 
-        self.stdout.write(self.style.SUCCESS(f"Successfully computed embeddings for {movies.count()} movies")) 
+        self.stdout.write(self.style.SUCCESS(f"Successfully computed embeddings for {movies.count()} movies"))

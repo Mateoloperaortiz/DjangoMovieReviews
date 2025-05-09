@@ -21,31 +21,30 @@ class Command(BaseCommand):
         movie2_title = options['movie2']
         prompt = options['prompt']
 
-        # ✅ Load environment variables from the .env file
+        # Attempt to load OpenAI API key from .env files
+        env_loaded_from_file = False
         env_file_paths = ['openAI.env', '../openAI.env', './openAI.env']
-        env_loaded = False
-        
         for path in env_file_paths:
             if os.path.exists(path):
                 load_dotenv(path)
-                self.stdout.write(f"Loaded environment from: {path}")
-                env_loaded = True
+                env_loaded_from_file = True
+                self.stdout.write(f"Loaded environment variables from: {path}")
                 break
         
-        if not env_loaded:
-            self.stderr.write(f"Could not find OpenAI env file in any of the expected locations.")
+        # Now, check if the API key is actually available in the environment
+        api_key_value = os.environ.get('openai_apikey')
+        
+        if not api_key_value:
+            error_msg = "OpenAI API key ('openai_apikey') not found. "
+            if env_loaded_from_file:
+                error_msg += "It was not found in the loaded .env file or as a platform environment variable."
+            else:
+                error_msg += "No .env file was found, and it was not set as a platform environment variable."
+            self.stderr.write(self.style.ERROR(error_msg))
             return
 
-        # Get API key from environment
-        api_key = os.environ.get('openai_apikey')
-        if not api_key:
-            self.stderr.write(f"OpenAI API key not found in environment variables.")
-            return
-
-        # ✅ Initialize the OpenAI client with the API key
-        client = OpenAI(
-            api_key=api_key,
-        )
+        # Initialize the OpenAI client with the API key
+        client = OpenAI(api_key=api_key_value)
         
         # ✅ Function to get embeddings from OpenAI API
         def get_embedding(text):
@@ -113,4 +112,4 @@ class Command(BaseCommand):
                 self.stdout.write(f"✅ '{movie2.title}' es más similar al prompt '{prompt}'")
                 
         except Exception as e:
-            self.stderr.write(f"Error calculating similarities: {str(e)}") 
+            self.stderr.write(f"Error calculating similarities: {str(e)}")

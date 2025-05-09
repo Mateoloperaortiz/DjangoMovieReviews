@@ -74,16 +74,19 @@ def recommend_movie(request):
         if prompt:
             # Try to find movies using OpenAI embeddings
             try:
-                # Load OpenAI API key
-                env_loaded = False
+                # Attempt to load OpenAI API key from .env files
+                env_loaded_from_file = False
                 for path in ['openAI.env', '../openAI.env', './openAI.env']:
                     if os.path.exists(path):
                         load_dotenv(path)
-                        env_loaded = True
-                        logger.info(f"Loaded environment from: {path}")
+                        env_loaded_from_file = True
+                        logger.info(f"Loaded environment variables from: {path}")
                         break
                 
-                if not env_loaded or not os.environ.get('openai_apikey'):
+                api_key_value = os.environ.get('openai_apikey')
+
+                if not api_key_value:
+                    logger.warning("OpenAI API key ('openai_apikey') not found. Falling back to text search.")
                     # Fall back to text search if OpenAI is not available
                     movies = Movie.objects.filter(title__icontains=prompt) | Movie.objects.filter(description__icontains=prompt)
                     
@@ -91,10 +94,10 @@ def recommend_movie(request):
                         recommended_movie = movies.first()
                         similarity_score = 0.75  # Approximate score
                     else:
-                        error_message = f"No movies found matching: '{prompt}'"
+                        error_message = f"No movies found matching: '{prompt}' (API key missing)."
                 else:
                     # Use OpenAI embeddings
-                    client = OpenAI(api_key=os.environ.get('openai_apikey'))
+                    client = OpenAI(api_key=api_key_value)
                     
                     # Get embedding for the prompt
                     prompt_embedding = get_embedding(client, prompt)
