@@ -26,7 +26,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-04uw%2=@6trgve
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Fetch DEBUG from environment variable, defaulting to False
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+# DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = True # Temporarily set to True for development media serving
 
 # Fetch ALLOWED_HOSTS from environment variable, defaulting to localhost and a common DO app pattern
 # For production, this should be a comma-separated string like "myapp.ondigitalocean.app,www.myapp.ondigitalocean.app"
