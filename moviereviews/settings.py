@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,19 +21,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-04uw%2=@6trgveh0n4*=!#lrjyuk9@2r%g%x!q7u^=!_#%ez4u'
+# Fetch SECRET_KEY from environment variable, with a default for local development (not for production)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-04uw%2=@6trgveh0n4*=!#lrjyuk9@2r%g%x!q7u^=!_#%ez4u')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# Fetch DEBUG from environment variable, defaulting to False
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['54.84.132.162', 'localhost', '127.0.0.1', '.vercel.app', '.now.sh']
+# Fetch ALLOWED_HOSTS from environment variable, defaulting to localhost and a common DO app pattern
+# For production, this should be a comma-separated string like "myapp.ondigitalocean.app,www.myapp.ondigitalocean.app"
+ALLOWED_HOSTS_STRING = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STRING.split(',')]
+# Add the DigitalOcean App Platform default domain pattern if a specific app URL is provided via another env var
+# (This is a more advanced setup, for now, the user can set DJANGO_ALLOWED_HOSTS directly)
+# Example: if os.environ.get('APP_DOMAIN'):
+#    ALLOWED_HOSTS.append(f".{os.environ.get('APP_DOMAIN')}")
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
-    'django_q2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,7 +51,6 @@ INSTALLED_APPS = [
     'movie',
     'news',
     'recommendations',
-    'scheduler',
 ]
 
 MIDDLEWARE = [
@@ -54,22 +63,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# Django Q Configuration
-Q_CLUSTER = {
-    'name': 'DjangoMovieReviews',
-    'workers': 2,
-    'recycle': 500,
-    'timeout': 300,
-    'retry': 310,     # slightly longer than timeout
-    'compress': True,
-    'save_limit': 250,
-    'queue_limit': 500,
-    'cpu_affinity': 1,
-    'label': 'Django Q',
-    'orm': 'default',
-    'max_attempts': 3,
-}
 
 ROOT_URLCONF = 'moviereviews.urls'
 
@@ -97,12 +90,19 @@ WSGI_APPLICATION = 'moviereviews.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=os.environ.get('DB_SSL_REQUIRE', '0') == '1')
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
